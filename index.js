@@ -16,8 +16,8 @@ app.get("/", (req, res) => {
 // Create a new instance of the WooCommerceAPI with your credentials
 const WooCommerce = new WooCommerceAPI({
   url: "https://hostmsn.com",
-  consumerKey: "ck_786fa0b155e6ba15579ca8997829fc0a81063eb0",
-  consumerSecret: "cs_483f23aa650611797a259d15bf0d658ec531239d",
+  consumerKey: "ck_57ab7cc3264cad5b45d33b7d9ac83204890f5810",
+  consumerSecret: "cs_37a3ef9c10067cdca9298ac4cabc1aee2f5443ed",
   wpAPI: true,
   version: "wc/v3",
 });
@@ -26,7 +26,7 @@ const WooCommerce = new WooCommerceAPI({
 async function run() {
   try {
     const client = new MongoClient(
-      "mongodb+srv://blogkawsar:DyUHLUUmnkEMlKTI@cluster0.zwupuzd.mongodb.net/?retryWrites=true&w=majority"
+      "mongodb+srv://sharifulenquiries:YS8RusGPx3xJNED7@cluster0.rpgoz1l.mongodb.net/?retryWrites=true&w=majority"
     );
     const database = await client.db("testdb");
 
