@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 
 // Create a new instance of the WooCommerceAPI with your credentials
 const WooCommerce = new WooCommerceAPI({
-  url: "https://hostmsn.com",
+  url: "https://fyrosefood.com",
   consumerKey: "ck_57ab7cc3264cad5b45d33b7d9ac83204890f5810",
   consumerSecret: "cs_37a3ef9c10067cdca9298ac4cabc1aee2f5443ed",
   wpAPI: true,
