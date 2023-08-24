@@ -67,6 +67,11 @@ async function run() {
         createdAt,
       });
 
+      const productPrice = 600; // Assuming the product price is 600
+      const calculatedQuantity = Math.floor(
+        parseInt(receivedPayment) / productPrice
+      );
+
       const params = req.params.text;
       // Define the order data
       const orderData = {
@@ -81,8 +86,8 @@ async function run() {
         },
         line_items: [
           {
-            product_id: 628, // ID of the product
-            quantity: parseInt(receivedPayment),
+            product_id: 2058, // ID of the product
+            quantity: calculatedQuantity,
           },
         ],
         meta_data: [
