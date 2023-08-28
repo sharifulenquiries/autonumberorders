@@ -67,6 +67,11 @@ async function run() {
         createdAt,
       });
 
+      const productPrice = 600; // Assuming the product price is 600
+      const calculatedQuantity = Math.floor(
+        parseInt(receivedPayment) / productPrice
+      );
+
       const params = req.params.text;
       // Define the order data
       const orderData = {
@@ -81,8 +86,8 @@ async function run() {
         },
         line_items: [
           {
-            product_id: 628, // ID of the product
-            quantity: parseInt(receivedPayment),
+            product_id: 2058, // ID of the product
+            quantity: calculatedQuantity,
           },
         ],
         meta_data: [
@@ -139,6 +144,11 @@ async function run() {
         createdAt,
       });
 
+      const productPrice = 600; // Assuming the product price is 600
+      const calculatedQuantity = Math.floor(
+        parseInt(receivedPayment) / productPrice
+      );
+
       const params = req.params.text;
       // Define the order data
       const orderData = {
@@ -153,8 +163,8 @@ async function run() {
         },
         line_items: [
           {
-            product_id: 628, // ID of the product
-            quantity: parseInt(receivedPayment),
+            product_id: 2058, // ID of the product
+            quantity: calculatedQuantity,
           },
         ],
         meta_data: [
@@ -183,15 +193,7 @@ async function run() {
       const result = await msgss.deleteMany({
         $and: [
           { phoneNumber: { $exists: true } }, // Check if phoneNumber field exists
-          // { $expr: { $lt: [{ $strLenCP: "$phoneNumber" }, 11] }  check if phoneNumber length is less than 11 or greater than 11
-          {
-            $expr: {
-              $or: [
-                { $lt: [{ $strLenCP: "$phoneNumber" }, 11] },
-                { $gt: [{ $strLenCP: "$phoneNumber" }, 11] },
-              ],
-            },
-          },
+          { $expr: { $gt: [{ $strLenCP: "$phoneNumber" }, 11] } },
         ],
       });
 
@@ -266,7 +268,7 @@ async function run() {
       sortObj[field] = sort === "ascend" ? 1 : -1;
 
       // default sort
-      sortObj["createdAt"] = 1;
+      sortObj["createdAt"] = -1;
 
       //filter
       const filter = req.query.filter || "";
@@ -315,20 +317,14 @@ async function run() {
     // add multiple numbers without woocommerce
     app.post("/add", async (req, res) => {
       const data = req.body;
-
-      const newData = [];
       // add date to each object
-      data.forEach((element) => {
-        // check phone number and add date
-        if (element.phoneNumber && element.phoneNumber.length === 11) {
-          element.createdAt = new Date();
-          newData.push(element);
-        }
+      data.forEach((item) => {
+        item.createdAt = new Date();
       });
 
-      const result = await msgss.insertMany(newData);
+      const result = await msgss.insertMany(data);
 
-      res.status(200).json({ data: result, list: data });
+      res.status(200).json({ data: result });
     });
 
     //   update all  received amount 0
