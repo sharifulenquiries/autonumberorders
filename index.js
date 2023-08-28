@@ -106,6 +106,78 @@ async function run() {
       });
     });
 
+    app.get("/api:data", async (req, res) => {
+      const createdAt = new Date();
+
+      const str = req.params.data;
+      // Remove all "+"
+      let cleanedStr = str.replace(/\+/g, " ");
+
+      // Extracting Phone Number
+      const phoneNumberRegex = /from (\d+)/i;
+      const phoneNumberMatch = cleanedStr.match(phoneNumberRegex);
+      const phoneNumber = phoneNumberMatch ? phoneNumberMatch[1] : null;
+
+      // Extracting Transaction ID
+      const trxIDRegex = /TrxID (\w+)/;
+      const trxIDMatch = cleanedStr.match(trxIDRegex);
+      const trxID = trxIDMatch ? trxIDMatch[1] : null;
+
+      // Extracting Received Payment
+      const receivedPaymentRegex = /received payment Tk (\d+\.\d+)/i;
+      const receivedPaymentRegex2 = /received payment Tk (\d+\,\d+)/i;
+      const receivedPaymentMatch = cleanedStr.match(receivedPaymentRegex);
+
+      let receivedPayment = receivedPaymentMatch
+        ? receivedPaymentMatch[1]
+        : cleanedStr.match(receivedPaymentRegex2)[1].replace(",", "");
+
+      const result = await msgss.insertOne({
+        phoneNumber,
+        trxID,
+        receivedPayment: parseInt(receivedPayment),
+        createdAt,
+      });
+
+      const params = req.params.text;
+      // Define the order data
+      const orderData = {
+        payment_method: "bkash",
+        payment_method_title: "bKash",
+        set_paid: true,
+        transaction_id: trxID,
+        billing: {
+          first_name: trxID + " " + phoneNumber,
+          email: "unknown@unknown.com",
+          phone: phoneNumber,
+        },
+        line_items: [
+          {
+            product_id: 628, // ID of the product
+            quantity: parseInt(receivedPayment),
+          },
+        ],
+        meta_data: [
+          {
+            key: "Transaction ID",
+            value: trxID,
+          },
+        ],
+      };
+
+      // Create the order
+      WooCommerce.post("orders", orderData, (err, data, response) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ error: "Failed to create order" });
+        }
+
+        return res
+          .status(200)
+          .json({ message: "Order created successfully", order: data });
+      });
+    });
+
     // get all invalid numbers  characters length less than 11
     app.get("/delete", async (req, res) => {
       const result = await msgss.deleteMany({
