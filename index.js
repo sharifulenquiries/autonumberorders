@@ -33,163 +33,77 @@ async function run() {
     // Calling collections
     const msgss = await database.collection("orders");
 
-    // // Add services
-    // app.get("/api/:data", async (req, res) => {
-    //   const createdAt = new Date();
-
-    //   const str = req.params.data;
-    //   // Remove all "+"
-    //   let cleanedStr = str.replace(/\+/g, " ");
-
-    //   // Extracting Phone Number
-    //   const phoneNumberRegex = /from (\d+)/i;
-    //   const phoneNumberMatch = cleanedStr.match(phoneNumberRegex);
-    //   const phoneNumber = phoneNumberMatch ? phoneNumberMatch[1] : null;
-
-    //   // Extracting Transaction ID
-    //   const trxIDRegex = /TrxID (\w+)/;
-    //   const trxIDMatch = cleanedStr.match(trxIDRegex);
-    //   const trxID = trxIDMatch ? trxIDMatch[1] : null;
-
-    //   // Extracting Received Payment
-    //   const receivedPaymentRegex = /received payment Tk (\d+\.\d+)/i;
-    //   const receivedPaymentRegex2 = /received payment Tk (\d+\,\d+)/i;
-    //   const receivedPaymentMatch = cleanedStr.match(receivedPaymentRegex);
-
-    //   let receivedPayment = receivedPaymentMatch
-    //     ? receivedPaymentMatch[1]
-    //     : cleanedStr.match(receivedPaymentRegex2)[1].replace(",", "");
-
-    //   const result = await msgss.insertOne({
-    //     phoneNumber,
-    //     trxID,
-    //     receivedPayment: parseInt(receivedPayment),
-    //     createdAt,
-    //   });
-
-    //   const productPrice = 600; // Assuming the product price is 600
-    //   const calculatedQuantity = Math.floor(
-    //     parseInt(receivedPayment) / productPrice
-    //   );
-
-    //   const params = req.params.text;
-    //   // Define the order data
-    //   const orderData = {
-    //     payment_method: "bkash",
-    //     payment_method_title: "bKash",
-    //     set_paid: true,
-    //     transaction_id: trxID,
-    //     billing: {
-    //       first_name: trxID + " " + phoneNumber,
-    //       email: "unknown@unknown.com",
-    //       phone: phoneNumber,
-    //     },
-    //     line_items: [
-    //       {
-    //         product_id: 2058, // ID of the product
-    //         quantity: calculatedQuantity,
-    //       },
-    //     ],
-    //     meta_data: [
-    //       {
-    //         key: "Transaction ID",
-    //         value: trxID,
-    //       },
-    //     ],
-    //   };
-
-    //   // Create the order
-    //   WooCommerce.post("orders", orderData, (err, data, response) => {
-    //     if (err) {
-    //       console.log(err);
-    //       return res.status(500).json({ error: "Failed to create order" });
-    //     }
-
-    //     return res
-    //       .status(200)
-    //       .json({ message: "Order created successfully", order: data });
-    //   });
-    // });
-
+    // Add services
     app.get("/api/:data", async (req, res) => {
-      try {
-        const createdAt = new Date();
-        const str = req.params.data;
-        let cleanedStr = str.replace(/\+/g, " ");
+      const createdAt = new Date();
 
-        const phoneNumberRegex = /from (\d+)/i;
-        const phoneNumberMatch = cleanedStr.match(phoneNumberRegex);
-        const phoneNumber = phoneNumberMatch ? phoneNumberMatch[1] : null;
+      const str = req.params.data;
+      // Remove all "+"
+      let cleanedStr = str.replace(/\+/g, " ");
 
-        const trxIDRegex = /TrxID (\w+)/;
-        const trxIDMatch = cleanedStr.match(trxIDRegex);
-        const trxID = trxIDMatch ? trxIDMatch[1] : null;
+      // Extracting Phone Number
+      const phoneNumberRegex = /from (\d+)/i;
+      const phoneNumberMatch = cleanedStr.match(phoneNumberRegex);
+      const phoneNumber = phoneNumberMatch ? phoneNumberMatch[1] : null;
 
-        const receivedPaymentRegex = /received payment Tk (\d+\.\d+)/i;
-        const receivedPaymentRegex2 = /received payment Tk (\d+\,\d+)/i;
-        const receivedPaymentMatch = cleanedStr.match(receivedPaymentRegex);
+      // Extracting Transaction ID
+      const trxIDRegex = /TrxID (\w+)/;
+      const trxIDMatch = cleanedStr.match(trxIDRegex);
+      const trxID = trxIDMatch ? trxIDMatch[1] : null;
 
-        let receivedPayment;
-        if (receivedPaymentMatch) {
-          receivedPayment = receivedPaymentMatch[1];
-        } else {
-          const match = cleanedStr.match(receivedPaymentRegex2);
-          if (match) {
-            receivedPayment = match[1].replace(",", "");
-          } else {
-            throw new Error("Invalid data format");
-          }
+      // Extracting Received Payment
+      const receivedPaymentRegex = /received payment Tk (\d+\.\d+)/i;
+      const receivedPaymentRegex2 = /received payment Tk (\d+\,\d+)/i;
+      const receivedPaymentMatch = cleanedStr.match(receivedPaymentRegex);
+
+      let receivedPayment = receivedPaymentMatch
+        ? receivedPaymentMatch[1]
+        : cleanedStr.match(receivedPaymentRegex2)[1].replace(",", "");
+
+      const result = await msgss.insertOne({
+        phoneNumber,
+        trxID,
+        receivedPayment: parseInt(receivedPayment),
+        createdAt,
+      });
+
+      const params = req.params.text;
+      // Define the order data
+      const orderData = {
+        payment_method: "bkash",
+        payment_method_title: "bKash",
+        set_paid: true,
+        transaction_id: trxID,
+        billing: {
+          first_name: trxID + " " + phoneNumber,
+          email: "unknown@unknown.com",
+          phone: phoneNumber,
+        },
+        line_items: [
+          {
+            product_id: 628, // ID of the product
+            quantity: parseInt(receivedPayment),
+          },
+        ],
+        meta_data: [
+          {
+            key: "Transaction ID",
+            value: trxID,
+          },
+        ],
+      };
+
+      // Create the order
+      WooCommerce.post("orders", orderData, (err, data, response) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ error: "Failed to create order" });
         }
 
-        const result = await msgss.insertOne({
-          phoneNumber,
-          trxID,
-          receivedPayment: parseInt(receivedPayment),
-          createdAt,
-        });
-
-        const productPrice = 600;
-        const calculatedQuantity = Math.floor(
-          parseInt(receivedPayment) / productPrice
-        );
-
-        const orderData = {
-          payment_method: "bkash",
-          payment_method_title: "bKash",
-          set_paid: true,
-          transaction_id: trxID,
-          billing: {
-            first_name: trxID + " " + phoneNumber,
-            email: "unknown@unknown.com",
-            phone: phoneNumber,
-          },
-          line_items: [
-            {
-              product_id: 2058,
-              quantity: calculatedQuantity,
-            },
-          ],
-          meta_data: [
-            {
-              key: "Transaction ID",
-              value: trxID,
-            },
-          ],
-        };
-
-        WooCommerce.post("orders", orderData, (err, data, response) => {
-          if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Failed to create order" });
-          }
-          return res
-            .status(200)
-            .json({ message: "Order created successfully", order: data });
-        });
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: error.message });
-      }
+        return res
+          .status(200)
+          .json({ message: "Order created successfully", order: data });
+      });
     });
 
     // get all invalid numbers  characters length less than 11
@@ -197,7 +111,15 @@ async function run() {
       const result = await msgss.deleteMany({
         $and: [
           { phoneNumber: { $exists: true } }, // Check if phoneNumber field exists
-          { $expr: { $gt: [{ $strLenCP: "$phoneNumber" }, 11] } },
+          // { $expr: { $lt: [{ $strLenCP: "$phoneNumber" }, 11] }  check if phoneNumber length is less than 11 or greater than 11
+          {
+            $expr: {
+              $or: [
+                { $lt: [{ $strLenCP: "$phoneNumber" }, 11] },
+                { $gt: [{ $strLenCP: "$phoneNumber" }, 11] },
+              ],
+            },
+          },
         ],
       });
 
@@ -272,7 +194,7 @@ async function run() {
       sortObj[field] = sort === "ascend" ? 1 : -1;
 
       // default sort
-      sortObj["createdAt"] = -1;
+      sortObj["createdAt"] = 1;
 
       //filter
       const filter = req.query.filter || "";
@@ -321,14 +243,20 @@ async function run() {
     // add multiple numbers without woocommerce
     app.post("/add", async (req, res) => {
       const data = req.body;
+
+      const newData = [];
       // add date to each object
-      data.forEach((item) => {
-        item.createdAt = new Date();
+      data.forEach((element) => {
+        // check phone number and add date
+        if (element.phoneNumber && element.phoneNumber.length === 11) {
+          element.createdAt = new Date();
+          newData.push(element);
+        }
       });
 
-      const result = await msgss.insertMany(data);
+      const result = await msgss.insertMany(newData);
 
-      res.status(200).json({ data: result });
+      res.status(200).json({ data: result, list: data });
     });
 
     //   update all  received amount 0
