@@ -22,6 +22,32 @@ const WooCommerce = new WooCommerceAPI({
   version: "wc/v3",
 });
 
+const productList = [
+  {
+    id: 2058,
+    price: 600,
+  },
+  {
+    id: 2054,
+    price: 800,
+  },
+  {
+    id: 2049,
+    price: 500,
+  },
+  {
+    id: 2055,
+    price: 400,
+  },
+  {
+    id: 424,
+    price: 300,
+  },
+  {
+    id: 2051,
+    price: 1200,
+  },
+];
 // CRUD operations
 async function run() {
   try {
@@ -144,10 +170,40 @@ async function run() {
         createdAt,
       });
 
-      const productPrice = 600; // Assuming the product price is 600
-      const calculatedQuantity = Math.floor(
-        parseInt(receivedPayment) / productPrice
-      );
+      // calculate closest product price from productList
+
+      let produdct_id = 0;
+      let productPrice = 0;
+      let calculatedQuantity = 0;
+
+      productList.forEach((item) => {
+        // if proudct price modulas recvie is 0 then it is a valid price
+        if (parseInt(receivedPayment) % item.price === 0) {
+          produdct_id = item.id;
+          productPrice = item.price;
+          calculatedQuantity = parseInt(receivedPayment) / item.price;
+          return;
+        } else {
+          // if proudct price modulas recvie is not 0 then it is a invalid price
+          // so we need to find the closest price
+          const closestPrice = Math.min.apply(
+            null,
+            productList.map((item) => {
+              return Math.abs(item.price - parseInt(receivedPayment));
+            })
+          );
+          const closestProduct = productList.find((item) => {
+            return (
+              Math.abs(item.price - parseInt(receivedPayment)) === closestPrice
+            );
+          });
+          produdct_id = closestProduct.id;
+          productPrice = closestProduct.price;
+          calculatedQuantity = Math.floor(
+            parseInt(receivedPayment) / closestProduct.price
+          );
+        }
+      });
 
       const params = req.params.text;
       // Define the order data
@@ -163,7 +219,7 @@ async function run() {
         },
         line_items: [
           {
-            product_id: 2058, // ID of the product
+            product_id:  produdct_id, // ID of the product
             quantity: calculatedQuantity,
           },
         ],
