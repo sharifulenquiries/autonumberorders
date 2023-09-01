@@ -60,8 +60,6 @@ async function run() {
     // Calling collections
     const msgss = await database.collection("orders");
 
-   
-
     // Add services
     app.get("/api/:data", async (req, res) => {
       const createdAt = new Date();
@@ -105,8 +103,9 @@ async function run() {
       // send  api hit
       // https://sms.kawsarcomputer.com/services/send.php?key=3ebd13d371d522f794ebf908e59e668b98f943a8&number=01798691956&message=Apnar+Deposit+Sofol+Vave+Sompono+Hyeche.+%0D%0AFast+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B17576109233%0D%0A&devices=5|0&type=sms&prioritize=0
 
+      // alamin vai api hit
       const response = await axios.get(
-        `https://sms.kawsarcomputer.com/services/send.php?key=3ebd13d371d522f794ebf908e59e668b98f943a8&number=${phoneNumber}&message=Apnar+Deposit+Sofol+Vave+Sompono+Hyeche.+%0D%0AFast+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B17576109233%0D%0A&devices=5|0&type=sms&prioritize=0`
+        `https://sms.kawsarcomputer.com/services/send.php?key=3ebd13d371d522f794ebf908e59e668b98f943a8&number=${phoneNumber}&message=${receivedPaymentMatch}TK+Deposit+${trxID}+Sofol+Vave+Sompono+Hyeche.+%0D%0A+1XBet+a+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B8801987352371%0D%0A&devices=6&type=sms&prioritize=0`
       );
       console.log(response.data);
 
