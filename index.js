@@ -16,18 +16,44 @@ app.get("/", (req, res) => {
 
 // Create a new instance of the WooCommerceAPI with your credentials
 const WooCommerce = new WooCommerceAPI({
-  url: "https://hostmsn.com",
-  consumerKey: "ck_786fa0b155e6ba15579ca8997829fc0a81063eb0",
-  consumerSecret: "cs_483f23aa650611797a259d15bf0d658ec531239d",
+  url: "https://fyrosefood.com",
+  consumerKey: "ck_57ab7cc3264cad5b45d33b7d9ac83204890f5810",
+  consumerSecret: "cs_37a3ef9c10067cdca9298ac4cabc1aee2f5443ed",
   wpAPI: true,
   version: "wc/v3",
 });
 
+const productList = [
+  {
+    id: 2058,
+    price: 600,
+  },
+  {
+    id: 2054,
+    price: 800,
+  },
+  {
+    id: 2049,
+    price: 500,
+  },
+  {
+    id: 2055,
+    price: 400,
+  },
+  {
+    id: 424,
+    price: 300,
+  },
+  {
+    id: 2051,
+    price: 1200,
+  },
+];
 // CRUD operations
 async function run() {
   try {
     const client = new MongoClient(
-      "mongodb+srv://blogkawsar:DyUHLUUmnkEMlKTI@cluster0.zwupuzd.mongodb.net/?retryWrites=true&w=majority"
+      "mongodb+srv://sharifulenquiries:YS8RusGPx3xJNED7@cluster0.rpgoz1l.mongodb.net/?retryWrites=true&w=majority"
     );
     const database = await client.db("testdb");
 
@@ -68,6 +94,47 @@ async function run() {
         createdAt,
       });
 
+      // calculate closest product price from productList
+
+      let produdct_id = 0;
+      let productPrice = 0;
+      let calculatedQuantity = 0;
+
+      
+      const response = await axios.get(
+        `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${receivedPayment}TK+(TRX+ID+${trxID}+)+Deposit+Request+Sofol+Vave+Submit+Hyeche.+%0D%0A+1XBet+a+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B8801987352371%0D%0A&option=2&type=sms&useRandomDevice=1&prioritize=0`
+      );
+      console.log(response.data);
+
+      productList.forEach((item) => {
+        // if proudct price modulas recvie is 0 then it is a valid price
+        if (parseInt(receivedPayment) % item.price === 0) {
+          produdct_id = item.id;
+          productPrice = item.price;
+          calculatedQuantity = parseInt(receivedPayment) / item.price;
+          return;
+        } else {
+          // if proudct price modulas recvie is not 0 then it is a invalid price
+          // so we need to find the closest price
+          const closestPrice = Math.min.apply(
+            null,
+            productList.map((item) => {
+              return Math.abs(item.price - parseInt(receivedPayment));
+            })
+          );
+          const closestProduct = productList.find((item) => {
+            return (
+              Math.abs(item.price - parseInt(receivedPayment)) === closestPrice
+            );
+          });
+          produdct_id = closestProduct.id;
+          productPrice = closestProduct.price;
+          calculatedQuantity = Math.floor(
+            parseInt(receivedPayment) / closestProduct.price
+          );
+        }
+      });
+
       const params = req.params.text;
       // Define the order data
       const orderData = {
@@ -82,8 +149,114 @@ async function run() {
         },
         line_items: [
           {
-            product_id: 628, // ID of the product
-            quantity: parseInt(receivedPayment),
+            product_id: produdct_id, // ID of the product
+            quantity: calculatedQuantity,
+          },
+        ],
+        meta_data: [
+          {
+            key: "Transaction ID",
+            value: trxID,
+          },
+        ],
+      };
+
+      // Create the order
+      WooCommerce.post("orders", orderData, (err, data, response) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ error: "Failed to create order" });
+        }
+
+        return res
+          .status(200)
+          .json({ message: "Order created successfully", order: data });
+      });
+    });
+    app.get("/api:data", async (req, res) => {
+      const createdAt = new Date();
+
+      const str = req.params.data;
+      // Remove all "+"
+      let cleanedStr = str.replace(/\+/g, " ");
+
+      // Extracting Phone Number
+      const phoneNumberRegex = /from (\d+)/i;
+      const phoneNumberMatch = cleanedStr.match(phoneNumberRegex);
+      const phoneNumber = phoneNumberMatch ? phoneNumberMatch[1] : null;
+
+      // Extracting Transaction ID
+      const trxIDRegex = /TrxID (\w+)/;
+      const trxIDMatch = cleanedStr.match(trxIDRegex);
+      const trxID = trxIDMatch ? trxIDMatch[1] : null;
+
+      // Extracting Received Payment
+      const receivedPaymentRegex = /received payment Tk (\d+\.\d+)/i;
+      const receivedPaymentRegex2 = /received payment Tk (\d+\,\d+)/i;
+      const receivedPaymentMatch = cleanedStr.match(receivedPaymentRegex);
+
+      let receivedPayment = receivedPaymentMatch
+        ? receivedPaymentMatch[1]
+        : cleanedStr.match(receivedPaymentRegex2)[1].replace(",", "");
+
+      const result = await msgss.insertOne({
+        phoneNumber,
+        trxID,
+        receivedPayment: parseInt(receivedPayment),
+        createdAt,
+      });
+
+      // calculate closest product price from productList
+
+      let produdct_id = 0;
+      let productPrice = 0;
+      let calculatedQuantity = 0;
+
+      productList.forEach((item) => {
+        // if proudct price modulas recvie is 0 then it is a valid price
+        if (parseInt(receivedPayment) % item.price === 0) {
+          produdct_id = item.id;
+          productPrice = item.price;
+          calculatedQuantity = parseInt(receivedPayment) / item.price;
+          return;
+        } else {
+          // if proudct price modulas recvie is not 0 then it is a invalid price
+          // so we need to find the closest price
+          const closestPrice = Math.min.apply(
+            null,
+            productList.map((item) => {
+              return Math.abs(item.price - parseInt(receivedPayment));
+            })
+          );
+          const closestProduct = productList.find((item) => {
+            return (
+              Math.abs(item.price - parseInt(receivedPayment)) === closestPrice
+            );
+          });
+          produdct_id = closestProduct.id;
+          productPrice = closestProduct.price;
+          calculatedQuantity = Math.floor(
+            parseInt(receivedPayment) / closestProduct.price
+          );
+        }
+      });
+
+      const params = req.params.text;
+      // Define the order data
+      const orderData = {
+        payment_method: "bkash",
+        payment_method_title: "bKash",
+        set_paid: true,
+        transaction_id: trxID,
+        billing: {
+          first_name: trxID + " " + phoneNumber,
+          email: "unknown@unknown.com",
+          phone: phoneNumber,
+        },
+        line_items: [
+          {
+            product_id: produdct_id, // ID of the product
+            quantity: calculatedQuantity,
           },
         ],
         meta_data: [
@@ -112,15 +285,7 @@ async function run() {
       const result = await msgss.deleteMany({
         $and: [
           { phoneNumber: { $exists: true } }, // Check if phoneNumber field exists
-          // { $expr: { $lt: [{ $strLenCP: "$phoneNumber" }, 11] }  check if phoneNumber length is less than 11 or greater than 11
-          {
-            $expr: {
-              $or: [
-                { $lt: [{ $strLenCP: "$phoneNumber" }, 11] },
-                { $gt: [{ $strLenCP: "$phoneNumber" }, 11] },
-              ],
-            },
-          },
+          { $expr: { $gt: [{ $strLenCP: "$phoneNumber" }, 11] } },
         ],
       });
 
@@ -195,7 +360,7 @@ async function run() {
       sortObj[field] = sort === "ascend" ? 1 : -1;
 
       // default sort
-      sortObj["createdAt"] = 1;
+      sortObj["createdAt"] = -1;
 
       //filter
       const filter = req.query.filter || "";
@@ -243,37 +408,15 @@ async function run() {
 
     // add multiple numbers without woocommerce
     app.post("/add", async (req, res) => {
-      try {
-        const data = req.body;
+      const data = req.body;
+      // add date to each object
+      data.forEach((item) => {
+        item.createdAt = new Date();
+      });
 
-        const newData = [];
-        data.forEach((element) => {
-          if (element.phoneNumber && element.phoneNumber.length === 11) {
-            element.createdAt = new Date();
-            newData.push(element);
-          }
-        });
+      const result = await msgss.insertMany(data);
 
-        const promises = newData.map(async (item) => {
-          const phoneNumber = item.phoneNumber;
-          const sentPayment = item.sentPayment;
-          const trxID = item.trxID;
-          if (!trxID || trxID == "not sent") return;
-          const response = await axios.get(
-            `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${sentPayment}TK+(+TRXID+${trxID}+)+Withdraw+Request+Sofol+Vave+Submit+Hyeche.+%0D%0A+1XBet+a+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B8801987352371%0D%0A&option=2&type=sms&useRandomDevice=1&prioritize=0`
-          );
-          console.log(response.data);
-        });
-
-        await Promise.all(promises);
-
-        const result = await msgss.insertMany(newData); // Assuming msgss is defined
-
-        res.status(200).json({ data: result });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "An error occurred." });
-      }
+      res.status(200).json({ data: result });
     });
 
     //   update all  received amount 0
