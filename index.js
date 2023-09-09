@@ -102,7 +102,7 @@ async function run() {
 
       
      const response = await axios.get(
-      `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${receivedPayment}TK+(TRX+ID+${trxID}+)+Deposit+Request+Sofol+Vave+Submit+Hyeche.+%0D%0A+Fast+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B971551120275%0D%0A&option=2&type=sms&prioritize=1`
+      `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${receivedPayment}TK+(TRX+ID+${trxID}+)+Deposit+Request+Submit+Hyeche+Opekkha+korun.+%0D%0A+Fast+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B971551120275%0D%0A&option=2&type=sms&prioritize=1`
    );
   console.log(response.data);
 
