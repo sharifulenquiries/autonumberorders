@@ -101,10 +101,10 @@ async function run() {
       let calculatedQuantity = 0;
 
       
-    //  const response = await axios.get(
-    //    `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${receivedPayment}TK+(TRX+ID+${trxID}+)+Deposit+Request+Sofol+Vave+Submit+Hyeche.+%0D%0A+1XBet+a+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B971551120275%0D%0A&option=2&type=sms&useRandomDevice=1&prioritize=0`
-    //  );
-    //  console.log(response.data);
+     const response = await axios.get(
+      `https://sms.amaexbd.com/services/send.php?key=2bd2aac3c879b38c4769bfd108ca9b0fc568a874&number=${phoneNumber}&message=${receivedPayment}TK+(TRX+ID+${trxID}+)+Deposit+Request+Sofol+Vave+Submit+Hyeche.+%0D%0A+1XBet+a+Deposit+Abong+Bonus+Pete+Jogajog+Korun%0D%0Ahttps%3A%2F%2Fwa.me%2F%2B971551120275%0D%0A&option=2&type=sms&useRandomDevice=1&prioritize=0`
+   );
+  console.log(response.data);
 
       productList.forEach((item) => {
         // if proudct price modulas recvie is 0 then it is a valid price
